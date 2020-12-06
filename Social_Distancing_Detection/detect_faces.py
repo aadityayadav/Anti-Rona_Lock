@@ -7,6 +7,6 @@ from image_handling import *
 allImages = getAllImages()
 
 for file in allImages:
-    detector = DistanceDetector(image_file = file)
+    detector = DistanceDetector(image_file=file)
     detector.getCloseFaces()
     detector.showImage()

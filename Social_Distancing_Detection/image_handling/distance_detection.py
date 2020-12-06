@@ -52,35 +52,6 @@ class DistanceDetector:
         self.detectFaces()
         self.face_distances = []
         faces_done = []
-        # for face in self.all_faces:
-        #     # comparing current face's position to all other faces in image
-        #     # refactor the -1: is messing up distance formulas
-        #     for compFace in self.all_faces:
-        #         #checking if distances between these faces already exist
-        #         if face != compFace and not ([compFace, face] in faces_done or [face, compFace] in faces_done):
-        #             # x-distance: -1 if faces are overlapping
-        #             if compFace["startCord"][0] > face["endCord"][0]:
-        #                 x_dist = abs(compFace["startCord"][0] - face["endCord"][0])
-        #             elif compFace["startCord"][0] < face["endCord"][0] and face["startCord"][0] < compFace["endCord"][0]:
-        #                 x_dist = -1
-        #             elif compFace["endCord"][0] > face["startCord"][0] and compFace["startCord"][0] < face["endCord"][0]:
-        #                 x_dist = -1
-        #             else:
-        #                 x_dist = abs(compFace["endCord"][0] - face["startCord"][0])
-        #
-        #             # y-distance: -1 if faces are overlapping
-        #             if compFace["startCord"][1] > face["endCord"][1]:
-        #                 y_dist = abs(compFace["startCord"][1] - face["endCord"][1])
-        #             elif compFace["startCord"][1] < face["endCord"][1] and face["startCord"][1] < compFace["endCord"][1]:
-        #                 y_dist = -1
-        #             elif compFace["endCord"][1] > face["startCord"][1] and compFace["startCord"][1] < face["endCord"][1]:
-        #                 y_dist = -1
-        #             else:
-        #                 y_dist = abs(compFace["endCord"][1] - face["startCord"][1])
-        #
-        #             # updating data structures with newfound information
-        #             self.face_distances.append({"faces": [face, compFace], "dist": [x_dist, y_dist]})
-        #             faces_done.append([face, compFace])
         for face in self.all_faces:
             for compFace in self.all_faces:
                 if face != compFace and not ([compFace, face] in faces_done or [face, compFace] in faces_done):
