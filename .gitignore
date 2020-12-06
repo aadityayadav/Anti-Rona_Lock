@@ -23,3 +23,6 @@ pythonenv*
 # useless .DS_Store files
 Social_Distancing_Detection/.DS_Store
 .DS_Store
+
+#images
+Social_Distancing_Detection/images

@@ -2,6 +2,9 @@ from .facedetector import FaceDetector
 from .distance_calculations import get_distance
 import imutils
 import cv2
+from Mask_Detection.detect_mask_video import detect_and_predict_mask
+import os
+from tensorflow.keras.models import load_model
 
 # the following class will be able to detect whether faces are social distancing given an input file #
 
@@ -20,7 +23,6 @@ class DistanceDetector:
     CONST_DISTANCE_TOLERANCE = 1.5 #the minimum distance that people can be relative to each other without breaching regulation in METERS
     image_count = 0
 
-
     def __init__(self, image_file = None, image = [], distance_tolerance = CONST_DISTANCE_TOLERANCE, adj_width = 1000, height = 500):
         self.image_file = image_file
         self.distance_tolerance = distance_tolerance
@@ -34,19 +36,47 @@ class DistanceDetector:
         self.gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
 
     def detectFaces(self):
-        fd = FaceDetector()
-        face_rects = fd.detect(self.gray, scaleFactor=1.1,
-                              minNeighbors=8, minSize=(30, 30))
+        # fd = FaceDetector()
+        # face_rects = fd.detect(self.gray, scaleFactor=1.1,
+        #                       minNeighbors=8, minSize=(30, 30))
+        #
+        # self.all_faces = []
+        # for (x, y, w, h) in face_rects:
+        #     start_cord = (x, y)
+        #     end_cord = (x + w, y + h)
+        #     cv2.rectangle(self.image, start_cord, end_cord, (0, 255, 0), 2)
+        #     self.num_faces = len(face_rects)
+        #     cv2.putText(self.image, "{} faces in this image".format(self.num_faces),
+        #                 (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 2)
+        #     self.all_faces.append({"startCord": start_cord, "endCord": end_cord})
 
+        debug_or_be_bugged_abs_path = os.path.dirname(os.path.realpath(__file__)).replace("/Social_Distancing_Detection/image_handling", "")
+
+        prototxtPath = debug_or_be_bugged_abs_path + "/Mask_Detection/face_detector/deploy.prototxt"
+        weightsPath = debug_or_be_bugged_abs_path + "/Mask_Detection/face_detector/res10_300x300_ssd_iter_140000.caffemodel"
+        faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
+
+        # load the face mask detector model from disk
+        maskNet = load_model(debug_or_be_bugged_abs_path + "/Mask_Detection/mask_detector.model")
+
+        (locs, preds) = detect_and_predict_mask(self.image, faceNet, maskNet)
+
+        i = 0
         self.all_faces = []
-        for (x, y, w, h) in face_rects:
-            start_cord = (x, y)
-            end_cord = (x + w, y + h)
+        # loop over the detected face locations and their corresponding locations
+        for (box, pred) in zip(locs, preds):
+            # unpack the bounding box and predictions
+            (startX, startY, endX, endY) = box
+            start_cord = (startX, startY)
+            end_cord = (endX, endY)
             cv2.rectangle(self.image, start_cord, end_cord, (0, 255, 0), 2)
-            self.num_faces = len(face_rects)
-            cv2.putText(self.image, "{} faces in this image".format(self.num_faces),
-                        (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 2)
+            i += 1
             self.all_faces.append({"startCord": start_cord, "endCord": end_cord})
+
+        self.num_faces = i
+        cv2.putText(self.image, "{} faces in this image".format(self.num_faces),
+                    (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 2)
+
 
     def detectDistances(self):
         self.detectFaces()
